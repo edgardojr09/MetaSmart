@@ -1,12 +1,12 @@
-// src/BeHealthy.js
-
 import React, { useState } from 'react';
+import { ethers } from 'ethers';
 
 const BeHealthy = () => {
   const [water, setWater] = useState('');
   const [sleep, setSleep] = useState('');
   const [eat, setEat] = useState('');
   const [message, setMessage] = useState('');
+  const [account, setAccount] = useState(null);
 
   const handleWaterChange = (e) => setWater(e.target.value);
   const handleSleepChange = (e) => setSleep(e.target.value);
@@ -41,6 +41,23 @@ const BeHealthy = () => {
         throw new Error('You need to eat 3 times a day to be healthy');
       }
       setMessage('Correct eating frequency!');
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
+  const connectWallet = async () => {
+    try {
+      if (window.ethereum) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const userAddress = await signer.getAddress();
+        setAccount(userAddress);
+        setMessage(`Connected to MetaMask: ${userAddress}`);
+      } else {
+        setMessage('MetaMask is not installed');
+      }
     } catch (error) {
       setMessage(error.message);
     }
@@ -119,10 +136,11 @@ const BeHealthy = () => {
         <button onClick={checkEatTimes} style={styles.button}>Check Eating Frequency</button>
       </div>
 
+      <button onClick={connectWallet} style={styles.button}>Connect MetaMask</button>
+
       {message && <p style={styles.message}>{message}</p>}
     </div>
   );
 };
 
 export default BeHealthy;
-
